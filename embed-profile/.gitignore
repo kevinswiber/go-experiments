@@ -1,0 +1,7 @@
+.task
+/cached
+/embedded
+/streaming
+*.prof
+*.png
+

@@ -1,0 +1,31 @@
+# See https://taskfile.dev/
+#
+# e.g. `task -w test-cov`
+version: "3"
+
+tasks:
+  build:
+    cmds:
+      - go build ./cmd/embedded
+      - go build ./cmd/streaming
+      - go build ./cmd/cached
+    sources:
+      - "**/*.go"
+
+  clean:
+    cmds:
+      - rm embedded 2>/dev/null
+      - rm *.prof 2>/dev/null
+    ignore_error: true
+
+  embedded:
+    cmds:
+      - ./embedded -cpuprofile=embedded_cpu.prof -memprofile=embedded_mem.prof
+
+  streaming:
+    cmds:
+      - ./streaming -cpuprofile=streaming_cpu.prof -memprofile=streaming_mem.prof
+
+  cached:
+    cmds:
+      - ./cached -cpuprofile=cached_cpu.prof -memprofile=cached_mem.prof
