@@ -41,4 +41,7 @@ server.route({
   }
 })
 
-server.listen({ port: '8080' })
+server.listen({
+  port: '8080',
+  host: process.env['HOST_ADDR'] || '127.0.0.1'
+})

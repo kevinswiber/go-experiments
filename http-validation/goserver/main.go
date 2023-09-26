@@ -57,8 +57,13 @@ func initServer() *http.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/message/new", routeHandler)
 
+	listenAddr := os.Getenv("HOST_ADDR")
+	if listenAddr == "" {
+		listenAddr = "127.0.0.1"
+	}
+
 	server := http.Server{
-		Addr:    "127.0.0.1:8080",
+		Addr:    fmt.Sprintf("%s:8080", listenAddr),
 		Handler: mux,
 	}
 

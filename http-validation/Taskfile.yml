@@ -1,0 +1,33 @@
+# See https://taskfile.dev/
+#
+# e.g. `task -w test-cov`
+version: "3"
+
+tasks:
+  build:
+    cmds:
+      - go build -o build/goserver ./goserver/main.go
+    sources:
+      - "**/*.go"
+
+  dockerize:
+    cmds:
+      - docker build --tag go_test_go --file goserver/Dockerfile .
+      - docker build --tag go_test_node --file nodeserver/Dockerfile .
+
+  run-go:
+    interactive: true
+    cmds:
+      - docker run --rm -it -p 8080:8080 --name go_test_go --cpus 1 --cpuset-cpus 0 go_test_go
+
+  run-node:
+    interactive: true
+    cmds:
+      - docker run --rm -it -p 8080:8080 --name go_test_node --cpus 1 --cpuset-cpus 0 go_test_node
+
+  clean:
+    cmds:
+      - rm build/*
+      - docker image rm go_test_go
+      - docker image rm go_test_node
+    ignore_error: true
