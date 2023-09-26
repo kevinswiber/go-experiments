@@ -4,7 +4,7 @@ strategy compares to Fastify's standard input validation.
 ## Running Tests
 
 The test script, and one of the test servers, requires `npm install` be run.
-Subsquent to that, we can run each test:
+Subsequent to that, we can run each test:
 
 ### Go Server
 
@@ -20,7 +20,8 @@ Subsquent to that, we can run each test:
 ## Results
 
 All results below were generated on a 2021 Apple MacBook Pro with an M1 Max
-and 32GB of RAM running macOS 13.4.1. The Go version used was 1.21.1.
+and 32GB of RAM running macOS 13.4.1. The Go version used was 1.21.1. The
+Node version used was 18.17.1.
 
 ### Go Server
 
