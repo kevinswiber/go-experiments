@@ -45,9 +45,9 @@ func Test_int64Value(t *testing.T) {
 	t.Run("writes and reads a child value to the database", func(t *testing.T) {
 		var val ChildLong = 42
 
-		db.Exec("insert into foo (id, data) values (1, @data)", sql.Named("data", val))
+		db.Exec("insert into foo (id, data) values (2, @data)", sql.Named("data", val))
 
-		rows, err := db.Query("select data from foo where id = 1")
+		rows, err := db.Query("select data from foo where id = 2")
 		if err != nil {
 			t.Error(err)
 			return
