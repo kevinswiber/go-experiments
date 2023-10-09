@@ -10,11 +10,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	validate "github.com/go-playground/validator/v10"
-	"github.com/jsumners/go-rfc3339"
+	"github.com/xeipuuv/gojsonschema"
 )
 
-var validator *validate.Validate
+var validator *gojsonschema.Schema
 
 func main() {
 	err := run()
@@ -47,10 +46,30 @@ mainLoop:
 }
 
 func initValidator() error {
-	validator = validate.New(validate.WithRequiredStructEnabled())
-	return validator.RegisterValidation("dateTime", func(fl validate.FieldLevel) bool {
-		return rfc3339.IsDateTimeString(fl.Field().String())
-	})
+	loader := gojsonschema.NewStringLoader(`
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "subject": { "type": "string" },
+        "created": { "type": "string", "format": "date-time" },
+        "body": { "type": "string" },
+        "author": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "email": { "type": "string", "format": "email" }
+          },
+          "required": ["name", "email"]
+        }
+      },
+      "required": ["subject", "created", "body", "author"]
+    }
+  `)
+
+	var err error
+	validator, err = gojsonschema.NewSchema(loader)
+	return err
 }
 
 func initServer() *http.Server {
@@ -75,13 +94,13 @@ func initServer() *http.Server {
 }
 
 type postBody struct {
-	Subject string `json:"subject" validate:"required"`
-	Created string `json:"created" validate:"required,dateTime"`
-	Body    string `json:"body" validate:"required"`
+	Subject string `json:"subject"`
+	Created string `json:"created"`
+	Body    string `json:"body"`
 	Author  struct {
-		Name  string `json:"name" validate:"required"`
-		Email string `json:"email" validate:"email"`
-	} `json:"author" validate:"required"`
+		Name  string `json:"name"`
+		Email string `json:"email"`
+	} `json:"author"`
 }
 
 func routeHandler(res http.ResponseWriter, req *http.Request) {
@@ -97,9 +116,18 @@ func routeHandler(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = validator.Struct(body)
+	loader := gojsonschema.NewGoLoader(body)
+	result, err := validator.Validate(loader)
 	if err != nil {
 		http.Error(res, fmt.Sprintf("validation failed: %v", err), http.StatusBadRequest)
+		return
+	}
+	if !result.Valid() {
+		var errors []string = make([]string, 0, len(result.Errors()))
+		for _, err := range result.Errors() {
+			errors = append(errors, fmt.Sprintf("%s", err))
+		}
+		http.Error(res, fmt.Sprintf("validation failed: %v", errors), http.StatusBadRequest)
 		return
 	}
 
